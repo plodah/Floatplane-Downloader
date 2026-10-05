@@ -128,8 +128,13 @@ export default class Subscription {
 		let videosSearched = 0;
 		console.log(chalk`Searching for new videos in {yellow ${this.plan}}`);
 		for await (const blogPost of fApi.creator.blogPostsIterable(this.creatorId)) {
-			for await (const video of this.matchChannel(blogPost)) {
-				yield video;
+			let fp = await fApi.content.post(blogPost.id);
+			let fullPost = Array.isArray(fp)?fp[0]:fp;
+			if(fullPost){
+				for await(let video of this.seekAndDestroy(fullPost)) {
+					yield video;
+				}
+				
 			}
 
 			// Stop searching if we have looked through videosToSearch
@@ -159,3 +164,4 @@ export default class Subscription {
 		for await (const video of this.matchChannel(blogPost)) yield video;
 	}
 }
+
